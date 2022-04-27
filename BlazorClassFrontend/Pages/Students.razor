@@ -1,0 +1,94 @@
+﻿@page "/students"
+@inject HttpClient _http
+@using BlazorClass.Dtos
+@using BlazorClass.Service
+@inject IApiService _apiService
+
+<PageTitle>Students</PageTitle>
+
+<MudText Typo="Typo.h6" Class="ml-5 mt-1" Align="Align.Left" GutterBottom="true" >Student Data</MudText>
+@if (_students == null)
+{
+    <MudProgressCircular Color="Color.Default" Indeterminate="true" />
+}
+else
+{
+    <MudTable Items="_students" Hover="true" SortLabel="Sort By" Elevation="0">
+        <HeaderContent>
+            <MudTh></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<StudentDto, object>(x=>x.SchoolCode)">SchoolCode</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<StudentDto, object>(x=>x.StudentId)">StudentId</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<StudentDto, object>(x=>x.LastName)">LastName</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<StudentDto, object>(x=>x.FirstName)">FirstName</MudTableSortLabel></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd><MudButton Variant="Variant.Outlined" Size="Size.Small" OnClick="@(() => ShowBtnPress(context.StudentId))">@((context.ShowDetail == true)? "Hide" : "Show") Contacts</MudButton></MudTd>
+            <MudTd DataLabel="SchoolCode">@context.SchoolCode</MudTd>
+            <MudTd DataLabel="StudentId">@context.StudentId</MudTd>
+            <MudTd DataLabel="LastName">@context.LastName</MudTd>
+            <MudTd DataLabel="FirstName">@context.FirstName</MudTd>
+        </RowTemplate>
+        <ChildRowContent>
+            @if (context.ShowDetail)
+            {
+                <MudTr>
+                    <td colspan="4">
+                        <MudCard Elevation="0">
+                            <MudCardHeader>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.body1">
+                                        Contact Details for <strong>@context.FirstName @context.LastName</strong>
+                                    </MudText>
+                                </CardHeaderContent>
+                            </MudCardHeader>
+                            <MudCardContent Class="pa-0">
+                                <MudTable Items="@_studentContact.Where(x => x.StudentId == context.StudentId)" Context="StudentContactContext" Hover="true" Elevation="0">
+                                    <HeaderContent>
+                                        <MudTh>Last Name</MudTh>
+                                        <MudTh>First Name</MudTh>
+                                        <MudTh>Relationship</MudTh>
+                                        <MudTh>Email Address</MudTh>
+                                        <MudTh>Mobile</MudTh>
+                                        <MudTh>Address</MudTh>
+                                        <MudTh>City</MudTh>
+                                        <MudTh>State</MudTh>
+                                        <MudTh>Zip Code</MudTh>
+                                    </HeaderContent>
+                                    <RowTemplate>
+                                        <MudTd DataLabel="Last Name">@StudentContactContext.Contact.LastName</MudTd>
+                                        <MudTd DataLabel="First Name">@StudentContactContext.Contact.FirstName</MudTd>
+                                        <MudTd DataLabel="Relationship">@StudentContactContext.Relationship</MudTd>
+                                        <MudTd DataLabel="Email Address">@StudentContactContext.Contact.EmailAddress</MudTd>
+                                        <MudTd DataLabel="Mobile">@StudentContactContext.Contact.Mobile</MudTd>
+                                        <MudTd DataLabel="Address">@StudentContactContext.Contact.Address.Street</MudTd>
+                                        <MudTd DataLabel="City">@StudentContactContext.Contact.Address.City</MudTd>
+                                        <MudTd DataLabel="State">@StudentContactContext.Contact.Address.State</MudTd>
+                                        <MudTd DataLabel="Zip Code">@StudentContactContext.Contact.Address.ZipCode</MudTd>
+                                    </RowTemplate>
+                                </MudTable>
+                            </MudCardContent>
+                        </MudCard>
+                    </td>
+                </MudTr>
+            }
+        </ChildRowContent>
+    </MudTable>
+}
+
+@code {
+    private List<StudentDto>? _students;
+    private List<StudentContactDto>? _studentContact;
+    private HttpClient _client;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _students = await _apiService.GetAllStudents();
+        _studentContact = await _apiService.GetAllStudentContacts();
+    }
+
+    private void ShowBtnPress(string id)
+	{
+		StudentDto tmpStudent = _students.First(f => f.StudentId == id);
+		tmpStudent.ShowDetail = !tmpStudent.ShowDetail;
+	}
+}

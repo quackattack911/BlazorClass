@@ -1,0 +1,54 @@
+CREATE TABLE dbo.Address
+(
+	AddressId UNIQUEIDENTIFIER NOT NULL,
+	Street NVARCHAR(200) NOT NULL,
+	City NVARCHAR(100) NOT NULL,
+	State VARCHAR(2) NOT NULL,
+	ZipCode VARCHAR(10) NULL
+
+	CONSTRAINT PK_Address_AddressId PRIMARY KEY (AddressId)
+);
+
+CREATE TABLE dbo.Student
+(
+    StudentId VARCHAR(8) NOT NULL,
+	SchoolCode VARCHAR(3) NOT NULL,
+	LastName NVARCHAR(50) NOT NULL,
+	FirstName NVARCHAR(50) NOT NULL,
+	AddressId UNIQUEIDENTIFIER NULL
+
+	CONSTRAINT PK_Student_StudentId PRIMARY KEY (StudentId)
+	CONSTRAINT FK_Student_AddressId FOREIGN KEY (AddressId) REFERENCES Address (AddressId)
+);
+
+CREATE TABLE dbo.Contact
+(
+	ContactId UNIQUEIDENTIFIER NOT NULL,
+	LastName NVARCHAR(50) NOT NULL,
+	FirstName NVARCHAR(50) NOT NULL,
+	Email NVARCHAR(100) NOT NULL,
+	Mobile VARCHAR(14) NOT NULL,
+	AddressId UNIQUEIDENTIFIER NULL
+
+	CONSTRAINT PK_Contact_ContactId PRIMARY KEY (ContactId)
+	CONSTRAINT FK_Contact_AddressId FOREIGN KEY (AddressId) REFERENCES Address (AddressId)
+);
+
+CREATE TABLE dbo.StudentContact
+(
+	StudentId VARCHAR(8) NOT NULL,
+	ContactId UNIQUEIDENTIFIER NOT NULL,
+	Relationship NVARCHAR(50) NOT NULL
+
+	CONSTRAINT PK_StudentContact PRIMARY KEY CLUSTERED (StudentId ASC, ContactId ASC)
+);
+
+ALTER TABLE dbo.StudentContact WITH CHECK ADD CONSTRAINT FK_StudentContact_StudentId FOREIGN KEY (StudentId)
+REFERENCES dbo.Student (StudentId)
+
+ALTER TABLE dbo.StudentContact CHECK CONSTRAINT FK_StudentContact_StudentId
+
+ALTER TABLE dbo.StudentContact WITH CHECK ADD CONSTRAINT FK_StudentContact_ContactId FOREIGN KEY (ContactId)
+REFERENCES dbo.Contact (ContactId)
+
+ALTER TABLE dbo.StudentContact CHECK CONSTRAINT FK_StudentContact_ContactId
